@@ -1,8 +1,11 @@
+from random import random
+
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from feature_selection.evaluation.Classification_Evaluation import Classification_Evaluator
@@ -12,14 +15,16 @@ from feature_selection.wrapper_model import Wrapper_Model
 from feature_selection.wrapper_nsga2 import Wrapper_NSGA2
 from pref.utility.Preferences import sampleSubset
 
+np.random.seed(0)
+
 
 def main_comparators(classifiers, wrappers, best_k = 1,aggregator = lambda x:x[0], dataloader = None, nb_datasets = 50):
     datas = {}
     if not dataloader:
         dataloader = make_classification
-    for c in classifiers:
-        for dt in range(nb_datasets):
-            X,y = dataloader(n_samples=500, n_features=15, n_informative=4)
+    for dt in range(nb_datasets):
+        X, y = dataloader(n_samples=1000, n_features=30, n_informative=5, n_redundant=5)
+        for c in classifiers:
             evaluator = Classification_Evaluator(X,y, cls=c())
             for wrapper in wrappers:
                 print("Wrapper: ", str(wrapper.__name__))
@@ -30,10 +35,10 @@ def main_comparators(classifiers, wrappers, best_k = 1,aggregator = lambda x:x[0
                     except(Exception):
                         print("error for model: ", wrapper)
                         break
-                    print("runned: ", i)
+                    print("runned: ", i/100, "")
                     datas["evaluations"] = datas.get("evaluations", []) + [w.n_evaluations]
                     datas["method"] = datas.get("method", []) + [str(w.__class__.__name__)]
-                    datas["classifier"] = datas.get("classifier", []) + [str(c.__class__.__name__)]
+                    datas["classifier"] = datas.get("classifier", []) + [str(c.__name__)]
                     datas["dataset"] = datas.get("dataset", []) + [str(dt)]
                     datas["performance"] = datas.get("performance", []) + [np.array([w.best_elements(aggregator=lambda x:x[0], k=1)]).mean()]
 
@@ -45,4 +50,4 @@ def main_comparators(classifiers, wrappers, best_k = 1,aggregator = lambda x:x[0
 
 
 if __name__ == "__main__":
-    main_comparators([RandomForestClassifier, DecisionTreeClassifier, LogisticRegression], wrappers=[Wrapper_NSGA2 ,Wrapper_Model, Wrapper_Fishburn])
+    main_comparators([RandomForestClassifier, DecisionTreeClassifier, LogisticRegression , MLPClassifier], wrappers=[Wrapper_NSGA2 ,Wrapper_Model, Wrapper_Fishburn])

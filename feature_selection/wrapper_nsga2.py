@@ -25,7 +25,7 @@ class Wrapper_NSGA2(Wrapper_Model):
         super().__init__(X, y, *args, **kwargs)
         self.P = kwargs["P"] if "P" in kwargs else 12
         self.MU = kwargs["MU"] if "MU" in kwargs else 5
-        self.CXPB, self.MUTPB = 0.6, 0.4
+        self.CXPB, self.MUTPB = 0.3, 0.2
 
         creator.create("FitnessMin", base.Fitness, weights=(1.0, 1.0))
         creator.create("Individual", list, fitness=creator.FitnessMin)
@@ -43,7 +43,7 @@ class Wrapper_NSGA2(Wrapper_Model):
 
         self.toolbox.register("evaluate", self.evaluateSubset)
         self.toolbox.register("mate", tools.cxTwoPoint)
-        self.toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+        self.toolbox.register("mutate", tools.mutFlipBit, indpb=0.1)
         self.toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
 
         # Initialize statistics object
@@ -91,9 +91,9 @@ class Wrapper_NSGA2(Wrapper_Model):
             fitnesses = self.toolbox.map(self.toolbox.evaluate, invalid_ind)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
-            pop = self.toolbox.select(self.population + offspring, self.MU)
-            #print("best precision: ", self.best_elements(aggregator=lambda x:x[0], k=1))
-            #print("with a number of evaluations: ", self.n_evaluations)
+            self.population = self.toolbox.select(self.population + offspring, self.MU)
+            print("best precision: ", self.best_elements(aggregator=lambda x:x[0], k=1))
+            print("with a number of evaluations: ", self.n_evaluations)
 
 
 if __name__ == "__main__":

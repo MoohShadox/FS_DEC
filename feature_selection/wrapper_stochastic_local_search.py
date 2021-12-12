@@ -25,19 +25,16 @@ class Wrapper_Stochastic_Local_Search(Wrapper_Model):
         neighbourhood = {}
         print("Current subset: ", subset, " : ", self.aggregator(self.evaluateSubset(subset)))
         print("number of calls: ", self.n_evaluations)
-        print("=============================")
         for k in not_in:
             s2 = subset + (k,)
             e = self.evaluateSubset(s2)
             neighbourhood[s2] = e
-            print("Evaluating: ", s2, " : ", e)
         for s in subset:
             s2 = tuple([i for i in subset if i!= s])
             if(len(s2) == 0):
                 continue
             e = self.evaluateSubset(s2)
             neighbourhood[s2] = e
-            print("Evaluating: ", s2, " : ", e)
 
         print("=============================")
         neighbours_values = np.array([self.aggregator(i) for i in neighbourhood.values()])

@@ -21,7 +21,7 @@ class Wrapper_Fishburn(Wrapper_Model):
         super().__init__(X, y, *args, **kwargs)
         self.k = kwargs["k"] if "k" in kwargs else 3
         self.model = Additive_Utility_Model(self.features, k = self.k)
-        self.model.create_params()
+        self.model.create_params(self.k)
         self.initial_evaluations = kwargs["initial_evaluations"] if "initial_evaluations" in kwargs else 1
         self.preferences = []
         self.theta_r = kwargs["theta_r"] if "theta_r" in kwargs else "MV"
@@ -47,18 +47,19 @@ class Wrapper_Fishburn(Wrapper_Model):
         self.compute_particular_theta()
         powers = self.power_index()
         v1 = self.model.get_utility_exp(subset).solution_value
-        k = np.random.randint(1, len(self.features))
-        s2 = tuple(sorted(np.random.choice(self.features, size=k, p=powers)))
+
+        s2 = sampleSubset(self.features)
         v2 = self.model.get_utility_exp(s2).solution_value
+
         cpt = 0
-        while(v2 <= v1):
+        while(v2 < v1):
             cpt += 1
-            k = np.random.randint(1, len(self.features))
-            s2 = tuple(sorted(np.random.choice(self.features, size=k, p=powers)))
+            s2 = sampleSubset(self.features)
             v2 = self.model.get_utility_exp(s2).solution_value
-            if(cpt == 1000):
+            if(cpt == 10000):
                 print("did'nt choose a solution")
-                break
+                return subset
+        print("Accepted after:" , cpt)
         return s2
 
     def evaluateSubset(self, subset, *args, **kwargs):
